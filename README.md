@@ -362,3 +362,5 @@ No está orientado a ambientes de producción reales sin modificaciones adiciona
 ## 19. Licencia
 
 Uso educativo.
+Creative Commons Zero v1.0 Universal
+
