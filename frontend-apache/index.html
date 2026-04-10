@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday App Web</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Birthday App</h1>
+      <p class="subtitle">Frontend web para la API de cumpleaños</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card settings-card">
+      <div class="section-title-row">
+        <h2>Configuración</h2>
+        <button id="reloadConfigBtn" class="secondary">Recargar</button>
+      </div>
+      <p>La URL base de la API se define en <code>config.js</code>.</p>
+      <div class="status-grid">
+        <div>
+          <span class="label">API base:</span>
+          <code id="apiBaseValue">-</code>
+        </div>
+        <div>
+          <span class="label">Estado:</span>
+          <span id="apiStatus" class="badge neutral">Sin verificar</span>
+        </div>
+      </div>
+      <div class="actions-row">
+        <button id="checkHealthBtn">Probar /health</button>
+      </div>
+      <pre id="healthOutput" class="output">Sin datos.</pre>
+    </section>
+
+    <section class="grid two-columns">
+      <section class="card">
+        <div class="section-title-row">
+          <h2>Personas registradas</h2>
+          <button id="loadPeopleBtn">Cargar</button>
+        </div>
+        <p class="help-text">Consulta <code>GET /api/people</code>.</p>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Fecha</th>
+                <th>Email</th>
+                <th>Ciudad</th>
+              </tr>
+            </thead>
+            <tbody id="peopleTableBody">
+              <tr><td colspan="6">Sin datos cargados.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Buscar persona por ID</h2>
+        <p class="help-text">Consulta <code>GET /api/people/&lt;id&gt;</code>.</p>
+        <form id="personByIdForm" class="inline-form">
+          <label for="personId">ID</label>
+          <input id="personId" name="personId" type="number" min="1" required>
+          <button type="submit">Buscar</button>
+        </form>
+        <pre id="personByIdOutput" class="output">Sin datos.</pre>
+      </section>
+    </section>
+
+    <section class="grid two-columns">
+      <section class="card">
+        <h2>Cumpleaños de hoy</h2>
+        <p class="help-text">Consulta <code>GET /api/birthdays/today</code>.</p>
+        <button id="birthdaysTodayBtn">Consultar</button>
+        <pre id="birthdaysTodayOutput" class="output">Sin datos.</pre>
+      </section>
+
+      <section class="card">
+        <h2>Cumpleaños por mes</h2>
+        <p class="help-text">Consulta <code>GET /api/birthdays/month/&lt;mes&gt;</code>.</p>
+        <form id="monthForm" class="inline-form">
+          <label for="month">Mes</label>
+          <input id="month" name="month" type="number" min="1" max="12" required>
+          <button type="submit">Consultar</button>
+        </form>
+        <pre id="birthdaysMonthOutput" class="output">Sin datos.</pre>
+      </section>
+    </section>
+
+    <section class="card">
+      <h2>Notas operativas</h2>
+      <ul>
+        <li>Si la API y esta web están en distintos hosts o puertos, la API debe permitir <strong>CORS</strong>.</li>
+        <li>Para despliegue en Apache basta con copiar <code>index.html</code>, <code>styles.css</code>, <code>config.js</code> y <code>app.js</code> al <code>DocumentRoot</code>.</li>
+        <li>Validar desde navegador y también con <code>curl</code> sobre la API.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Laboratorio de Administración de Sistemas - frontend estático para Apache</p>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

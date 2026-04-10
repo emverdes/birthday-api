@@ -1,366 +1,193 @@
-# birthday-api
+# Birthday App - Arquitectura de 3 capas
 
-Aplicación de ejemplo para un laboratorio de **Administración de Sistemas Linux**.
+## 1. Descripción general
 
-## 1. Propósito del proyecto
+`birthday-app` es una aplicación didáctica orientada a estudiantes de Administración de Sistemas. Se presenta como un sistema de **3 capas**, con componentes separados para interfaz web, lógica de negocio y persistencia de datos.
 
-`birthday-api` es una aplicación web sencilla desarrollada en Python, cuyo objetivo es servir como base para actividades prácticas de despliegue y operación de servicios en Linux. La aplicación publica una API HTTP, consulta información almacenada en una base de datos MariaDB y está pensada para ser ejecutada como servicio gestionado por `systemd`.
+La solución permite trabajar conceptos de despliegue, organización de archivos en Linux, publicación de servicios, integración entre componentes y validación operativa.
 
-El proyecto fue diseñado con fines **didácticos**. Su valor principal no está en la complejidad del desarrollo de software, sino en el hecho de que permite trabajar sobre tareas propias de un administrador de sistemas, tales como:
+## 2. Arquitectura de 3 capas
 
-- instalación y organización de archivos de una aplicación;
-- separación entre código, configuración y datos variables;
-- creación y administración de servicios con `systemd`;
-- validación funcional mediante herramientas de línea de comandos;
-- diagnóstico básico de errores de despliegue y conectividad.
+La aplicación se compone de las siguientes capas:
 
-## 2. Objetivos de aprendizaje
+### 2.1. Capa de presentación
 
-Al completar la instalación y validación de esta aplicación, se espera que el estudiante sea capaz de:
+Frontend web estático desplegado en **Apache HTTP Server**.
 
-1. desplegar una aplicación Python en un servidor Linux;
-2. instalar dependencias en un entorno controlado;
-3. ubicar correctamente los componentes de una aplicación en el sistema de archivos;
-4. crear y operar un servicio administrado por `systemd`;
-5. validar el funcionamiento de una API con `curl`;
-6. verificar la conectividad con una base de datos MariaDB;
-7. identificar y resolver fallas básicas de configuración, permisos o red.
+Responsabilidades:
 
-## 3. Descripción funcional
+- presentar una interfaz web al usuario,
+- consumir la API mediante solicitudes HTTP,
+- mostrar resultados de consultas de personas y cumpleaños.
 
-La aplicación expone una API REST simple para consultar datos de personas y sus fechas de nacimiento.
+Ubicación en el repositorio:
 
-### Endpoints disponibles
+- `frontend-apache/`
 
-- `GET /health`
-- `GET /api/people`
-- `GET /api/people/<id>`
-- `GET /api/birthdays/today`
-- `GET /api/birthdays/month/<mes>`
+### 2.2. Capa de lógica de negocio
 
-## 4. Arquitectura de referencia
+Backend desarrollado en **Python** con **Flask**.
 
-El laboratorio puede desplegarse sobre dos máquinas virtuales.
+Responsabilidades:
 
-### Servidor de base de datos
+- exponer endpoints HTTP,
+- procesar solicitudes del frontend,
+- consultar la base de datos,
+- devolver respuestas en formato JSON.
 
-- ejecuta MariaDB;
-- almacena la base `birthdays`;
-- contiene la tabla `people` con datos de ejemplo.
+Ubicación en el repositorio:
 
-### Servidor de aplicación
+- `backend-api/`
 
-- ejecuta Linux con `systemd`;
-- contiene el código de la aplicación Python;
-- ejecuta la API como servicio del sistema;
-- se conecta por red al servidor MariaDB.
+### 2.3. Capa de persistencia
+
+Base de datos **MariaDB**.
+
+Responsabilidades:
+
+- almacenar los datos de personas y fechas de cumpleaños,
+- permitir consultas desde la API,
+- separar la persistencia del código de aplicación.
+
+Ubicación en el repositorio:
+
+- `database-mariadb/`
+
+## 3. Topología sugerida
+
+Se recomienda una topología con tres servidores o tres roles claramente diferenciados:
+
+- **Servidor web**: Apache + frontend estático
+- **Servidor de aplicación**: Python + API + systemd
+- **Servidor de base de datos**: MariaDB
+
+Para laboratorios pequeños, el backend y la base de datos pueden convivir en la misma VM. Sin embargo, desde el punto de vista conceptual, se mantiene la separación en tres capas.
+
+## 4. Objetivos de aprendizaje
+
+Este repositorio permite trabajar los siguientes temas:
+
+- despliegue de una aplicación de 3 capas en Linux,
+- uso correcto de directorios como `/opt`, `/etc` y `/var`,
+- publicación de un servicio con `systemd`,
+- despliegue de contenido estático en Apache,
+- validación funcional con `curl` y navegador,
+- troubleshooting básico de red, servicios y conectividad,
+- comprensión del rol de cada capa dentro de una aplicación.
 
 ## 5. Estructura del repositorio
 
 ```text
-birthday-api/
-├── app.py
-├── config.py
-├── db.py
-├── requirements.txt
-├── birthday-api.conf.example
-├── .gitignore
-├── systemd/
-│   └── birthday-api.service
-└── sql/
-    └── init.sql
+birthday-3capas/
+├── README.md
+├── docs/
+│   └── arquitectura-3capas.md
+├── frontend-apache/
+│   ├── README.md
+│   ├── index.html
+│   ├── styles.css
+│   ├── config.js
+│   ├── app.js
+│   └─── apache/
+├── backend-api/
+│   ├── README.md
+│   ├── app/
+│   ├── config/
+│   ├── requirements.txt
+│   ├── scripts/
+│   ├── sql/
+│   └── systemd/
+└── database-mariadb/
+    ├── README.md
+    └── sql/
 ```
 
-## 6. Organización recomendada en el sistema de archivos
+## 6. Orden recomendado de despliegue
 
-Se recomienda desplegar la aplicación con una estructura coherente con prácticas habituales de administración Linux:
+Se recomienda desplegar las capas en este orden:
 
-- `/opt/birthday-api/`  
-  Contiene el código de la aplicación y el entorno virtual de Python.
+1. **Base de datos**
+   - instalar MariaDB,
+   - crear base, usuario y tabla,
+   - cargar datos iniciales.
 
-- `/etc/birthday-api/`  
-  Contiene el archivo de configuración editable por el administrador.
+2. **Backend API**
+   - instalar Python,
+   - desplegar código,
+   - crear archivo de configuración,
+   - crear unit file,
+   - iniciar servicio con `systemd`.
 
-- `/var/log/birthday-api/`  
-  Puede utilizarse para almacenar logs específicos de la aplicación, si se desea extender el ejercicio.
+3. **Frontend web**
+   - instalar Apache,
+   - copiar archivos estáticos,
+   - configurar la URL de la API,
+   - validar acceso desde navegador.
 
-Esta separación favorece el orden operativo, la mantenibilidad y la claridad administrativa.
+## 7. Relación entre componentes
 
-## 7. Requisitos previos
+Flujo básico de operación:
 
-### En el servidor de aplicación
+1. el usuario accede al frontend en Apache,
+2. el frontend ejecuta solicitudes HTTP a la API,
+3. la API consulta MariaDB,
+4. MariaDB devuelve resultados,
+5. la API responde en JSON,
+6. el frontend presenta la información al usuario.
 
-- sistema Linux con `systemd`;
-- Python 3;
-- acceso de red al servidor MariaDB.
+## 8. Consideraciones importantes
 
-### En el servidor de base de datos
+### 8.1. Organización del filesystem
 
-- MariaDB Server operativo.
+En Linux, se recomienda separar:
 
-## 8. Preparación de la base de datos
+- software en `/opt`,
+- configuración en `/etc`,
+- logs y datos variables en `/var`.
 
-En el servidor MariaDB, ejecutar el script incluido en el repositorio:
+### 8.2. Seguridad básica
 
-```bash
-mysql -u root -p < sql/init.sql
-```
+- no almacenar contraseñas en el código,
+- restringir permisos sobre archivos de configuración,
+- usar un usuario de servicio para ejecutar la API,
+- limitar acceso de red a la base de datos.
 
-El script realiza las siguientes tareas:
+## 9. Documentación por capa
 
-- crea la base de datos `birthdays`;
-- crea el usuario `birthdayapp`;
-- crea la tabla `people`;
-- inserta datos de ejemplo.
+Cada capa tiene su propio `README.md`:
 
-> Nota: el host permitido para el usuario SQL está definido como `10.%`. Debe ajustarse según la red utilizada en el laboratorio.
+- `frontend-apache/README.md`
+- `backend-api/README.md`
+- `database-mariadb/README.md`
 
-## 9. Instalación en el servidor de aplicación
+El objetivo del `README.md` principal es presentar la arquitectura general y el encadenamiento de componentes.
 
-### 9.1. Instalar paquetes requeridos
+## 10. Uso didáctico sugerido
 
-En una distribución tipo RHEL o CentOS Stream:
+Este repositorio puede usarse de dos maneras:
 
-```bash
-sudo dnf install -y python3 python3-pip
-```
+### Opción A: laboratorio de despliegue
 
-Opcionalmente, para realizar pruebas manuales de conexión con MariaDB:
+Los estudiantes reciben el código y deben desplegar correctamente cada capa.
 
-```bash
-sudo dnf install -y mariadb
-```
+### Opción B: laboratorio con troubleshooting
 
-### 9.2. Crear usuario de servicio
+El docente entrega una de las capas con errores deliberados, por ejemplo:
 
-```bash
-sudo useradd --system --home /opt/birthday-api --shell /sbin/nologin birthdayapi
-```
+- URL de API incorrecta en el frontend,
+- credenciales erróneas en el backend,
+- servicio systemd mal definido,
+- firewall bloqueando puertos,
+- permisos incorrectos sobre configuración.
 
-### 9.3. Crear directorios de despliegue
+## 11. Referencias internas
 
-```bash
-sudo mkdir -p /opt/birthday-api
-sudo mkdir -p /etc/birthday-api
-sudo chown birthdayapi:birthdayapi /opt/birthday-api
-sudo chown root:root /etc/birthday-api
-sudo chmod 755 /etc/birthday-api
-```
+- `docs/arquitectura-3capas.md`
+- `frontend-apache/README.md`
+- `backend-api/README.md`
+- `database-mariadb/README.md`
 
-### 9.4. Copiar archivos de la aplicación
+## 12. Licencia
 
-Copiar `app.py`, `config.py`, `db.py` y `requirements.txt` a `/opt/birthday-api/`.
-
-Ejemplo:
-
-```bash
-sudo cp app.py config.py db.py requirements.txt /opt/birthday-api/
-sudo chown birthdayapi:birthdayapi /opt/birthday-api/*
-```
-
-### 9.5. Crear entorno virtual e instalar dependencias
-
-```bash
-sudo -u birthdayapi python3 -m venv /opt/birthday-api/venv
-sudo -u birthdayapi /opt/birthday-api/venv/bin/pip install --upgrade pip
-sudo -u birthdayapi /opt/birthday-api/venv/bin/pip install -r /opt/birthday-api/requirements.txt
-```
-
-## 10. Configuración de la aplicación
-
-Copiar el archivo de ejemplo incluido en el repositorio:
-
-```bash
-sudo cp birthday-api.conf.example /etc/birthday-api/birthday-api.conf
-sudo chmod 600 /etc/birthday-api/birthday-api.conf
-```
-
-Editar el archivo `/etc/birthday-api/birthday-api.conf` con los valores apropiados:
-
-```bash
-DB_HOST=192.168.56.20
-DB_PORT=3306
-DB_NAME=birthdays
-DB_USER=birthdayapp
-DB_PASSWORD=ChangeThisPassword
-APP_HOST=0.0.0.0
-APP_PORT=8000
-```
-
-Se debe verificar especialmente:
-
-- dirección IP o nombre del servidor MariaDB;
-- usuario y contraseña correctos;
-- puerto en el que quedará publicada la API.
-
-## 11. Instalación del servicio `systemd`
-
-Copiar el unit file provisto:
-
-```bash
-sudo cp systemd/birthday-api.service /etc/systemd/system/birthday-api.service
-```
-
-Recargar la configuración de `systemd`, habilitar el servicio e iniciarlo:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now birthday-api.service
-```
-
-Verificar el estado:
-
-```bash
-sudo systemctl status birthday-api.service
-```
-
-Consultar logs del servicio:
-
-```bash
-sudo journalctl -u birthday-api.service -f
-```
-
-## 12. Validación funcional
-
-### 12.1. Verificación de salud
-
-```bash
-curl http://localhost:8000/health
-```
-
-Respuesta esperada:
-
-```json
-{"status":"ok"}
-```
-
-### 12.2. Consulta de todas las personas
-
-```bash
-curl http://localhost:8000/api/people
-```
-
-### 12.3. Consulta de una persona por identificador
-
-```bash
-curl http://localhost:8000/api/people/1
-```
-
-### 12.4. Consulta de cumpleaños del día
-
-```bash
-curl http://localhost:8000/api/birthdays/today
-```
-
-### 12.5. Consulta de cumpleaños por mes
-
-```bash
-curl http://localhost:8000/api/birthdays/month/4
-```
-
-## 13. Consideraciones de red y firewall
-
-Si se requiere acceso remoto al servicio y el sistema utiliza `firewalld`, abrir el puerto correspondiente:
-
-```bash
-sudo firewall-cmd --add-port=8000/tcp --permanent
-sudo firewall-cmd --reload
-```
-
-## 14. Verificación operativa complementaria
-
-Además de las pruebas con `curl`, conviene validar:
-
-- que el servicio esté activo;
-- que el puerto se encuentre en escucha;
-- que exista conectividad hacia MariaDB.
-
-Ejemplos:
-
-```bash
-sudo systemctl status birthday-api.service
-ss -lntp | grep 8000
-mysql -h <db_host> -u birthdayapp -p birthdays
-```
-
-## 15. Troubleshooting básico
-
-### 15.1. El servicio no inicia
-
-Revisar:
-
-```bash
-sudo systemctl status birthday-api.service
-sudo journalctl -xeu birthday-api.service
-```
-
-Verificar especialmente:
-
-- ruta de `ExecStart`;
-- existencia del entorno virtual;
-- permisos sobre archivos y directorios;
-- sintaxis del archivo de configuración.
-
-### 15.2. La aplicación no conecta a MariaDB
-
-Verificar:
-
-- valor de `DB_HOST`;
-- credenciales configuradas;
-- permisos del usuario SQL;
-- accesibilidad del puerto 3306 por red.
-
-### 15.3. La API responde localmente pero no remotamente
-
-Verificar:
-
-- que `APP_HOST` esté definido como `0.0.0.0`;
-- reglas de firewall;
-- dirección IP utilizada en la prueba remota;
-- estado de escucha del puerto.
-
-## 16. Posibles extensiones académicas
-
-Una vez completado el despliegue básico, el proyecto puede ampliarse con actividades adicionales, por ejemplo:
-
-- agregar nuevos endpoints;
-- incorporar logs propios de aplicación;
-- ejecutar la API detrás de `nginx`;
-- reemplazar el servidor embebido de Flask por `gunicorn`;
-- endurecer más el servicio en `systemd`;
-- documentar el despliegue como procedimiento operativo.
-
-## 17. Inicialización del repositorio Git
-
-Si se desea publicar este proyecto en un repositorio Git:
-
-```bash
-git init
-git add .
-git commit -m "Initial commit: birthday-api sample app"
-```
-
-Para asociarlo a un repositorio remoto:
-
-```bash
-git branch -M main
-git remote add origin <URL_DEL_REPOSITORIO>
-git push -u origin main
-```
-
-## 18. Uso previsto
-
-Este proyecto fue concebido para:
-
-- prácticas de laboratorio;
-- trabajos prácticos de despliegue;
-- actividades de validación de servicios;
-- ejercicios de troubleshooting inicial.
-
-No está orientado a ambientes de producción reales sin modificaciones adicionales.
-
-## 19. Licencia
-
-Uso educativo.
 Creative Commons Zero v1.0 Universal
-
+Uso educativo.
