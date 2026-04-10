@@ -1,0 +1,20 @@
+[Unit]
+Description=Birthday API
+After=network.target
+
+[Service]
+Type=simple
+User=birthdayapi
+Group=birthdayapi
+WorkingDirectory=/opt/birthday-api
+EnvironmentFile=/etc/birthday-api/birthday-api.conf
+ExecStart=/opt/birthday-api/venv/bin/python /opt/birthday-api/app/app.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
